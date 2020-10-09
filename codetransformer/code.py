@@ -218,6 +218,7 @@ def _freevar_argname(arg, cellvars, freevars):
 
 
 def pycode(argcount,
+           posonlyargcount,
            kwonlyargcount,
            nlocals,
            stacksize,
@@ -238,23 +239,43 @@ def pycode(argcount,
     --------
     types.CodeType
     """
-    return CodeType(
-        argcount,
-        kwonlyargcount,
-        nlocals,
-        stacksize,
-        flags,
-        codestring,
-        constants,
-        names,
-        varnames,
-        filename,
-        name,
-        firstlineno,
-        lnotab,
-        freevars,
-        cellvars,
-    )
+    if hasattr(CodeType, "co_posonlyargcount"):
+        return CodeType(
+            argcount,
+            posonlyargcount,  # new in 3.8
+            kwonlyargcount,
+            nlocals,
+            stacksize,
+            flags,
+            codestring,
+            constants,
+            names,
+            varnames,
+            filename,
+            name,
+            firstlineno,
+            lnotab,
+            freevars,
+            cellvars,
+        )
+    else:
+        return CodeType(
+            argcount,
+            kwonlyargcount,
+            nlocals,
+            stacksize,
+            flags,
+            codestring,
+            constants,
+            names,
+            varnames,
+            filename,
+            name,
+            firstlineno,
+            lnotab,
+            freevars,
+            cellvars,
+        )
 
 
 class Code:
@@ -581,22 +602,23 @@ class Code:
                 # with wordcode, all instructions are padded to 2 bytes
                 bc.append(0)
 
-        return CodeType(
-            self.argcount,
-            self.kwonlyargcount,
-            len(varnames),
-            self.stacksize,
-            self.py_flags,
-            bytes(bc),
-            consts,
-            names,
-            varnames,
-            self.filename,
-            self.name,
-            self.firstlineno,
-            self.py_lnotab,
-            freevars,
-            cellvars,
+        return pycode(
+            argcount=self.argcount,
+            posonlyargcount=0,
+            kwonlyargcount=self.kwonlyargcount,
+            nlocals=len(varnames),
+            stacksize=self.stacksize,
+            flags=self.py_flags,
+            codestring=bytes(bc),
+            constants=consts,
+            names=names,
+            varnames=varnames,
+            filename=self.filename,
+            name=self.name,
+            firstlineno=self.firstlineno,
+            lnotab=self.py_lnotab,
+            freevars=freevars,
+            cellvars=cellvars
         )
 
     @property

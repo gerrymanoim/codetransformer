@@ -154,6 +154,7 @@ def test_code_flags(sample_flags):
 
         code = Code.from_pycode(pycode(
             argcount=0,
+            posonlyargcount=0,
             kwonlyargcount=0,
             nlocals=2,
             stacksize=0,
